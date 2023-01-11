@@ -1,0 +1,76 @@
+import sklearn
+import matplotlib.pyplot as plt
+import numpy as np
+import pickle
+
+import sklearn.datasets
+loaded = sklearn.datasets.load_breast_cancer()
+print(loaded)
+
+x = loaded.data
+y = loaded.target
+#print(x,'\n',y) to get the names mentioned in data like 'data', 'target', etc.
+print(x.shape, y.shape)
+z = loaded.target_names
+Z = loaded.feature_names
+
+#Pandas
+#making dataframe
+import pandas as pd
+a = pd.DataFrame(loaded.data, columns = loaded.feature_names)
+b = pd.DataFrame(loaded.target)
+print(a,b)
+#Adding the output column to DataFrame containing loaded.data
+a['output'] = y
+#printing summary
+a.head()
+a.describe()
+#groupby
+a.groupby('output').mean()
+a.groupby('output').max()
+
+
+#Graph for no of occurances
+#G1
+Mean_area = a['mean area'].value_counts()
+print(Mean_area)
+gr = pd.DataFrame(Mean_area)
+gr['mean area value'] = a['mean area'].value_counts().index.tolist()
+plt.figure(figsize=[10,10])
+plt.bar(x=gr['mean area value'], height = gr['mean area'])
+#G2
+a1 = a['output'].value_counts().index.tolist()
+a2 = a['output'].value_counts()
+plt.bar(x = a1 ,height = a2)
+print(a1,'\n', a2)
+#G3
+plt.pie(a2)
+
+
+#model making
+from sklearn.model_selection import train_test_split
+train_x, test_x, train_y, test_y = train_test_split(x,y, test_size=0.2, stratify=y, random_state=1)
+# 20% of data is taken as test data
+# stratify is used only to get y.mean(), train_y.mean(), test_y.mean() values almost equal - {for correct distribution of original data}
+# random_state is used so that everytime we run the first split data is only taken, everytime we run
+#print(train_x.shape, train_y.shape)
+from sklearn.svm import SVC
+reg = SVC()
+reg.fit(train_x, train_y)
+
+#test data accuracy
+from sklearn.metrics import accuracy_score
+pred_y = reg.predict(test_x)
+acc = accuracy_score(test_y, pred_y)
+print(acc)
+#train data accuracy
+PRED_Y = reg.predict(train_x)
+ACC = accuracy_score(train_y, PRED_Y )
+print(ACC)
+
+x_o = np.random.randint(0,1,30)
+x_x = np.asarray(x_o).reshape(1,-1)
+print(reg.predict(x_x))
+
+filename = "breast_model_trial_2"
+pickle.dump(reg, open(filename, 'wb'))
